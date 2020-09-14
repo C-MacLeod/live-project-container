@@ -9,10 +9,9 @@ RUN apk add --no-cache \
     openssh-client~=8.3_p1 \
     rsync~=3.1.3
 
-HEALTHCHECK CMD wget -q --method=HEAD localhost:1313
 
 ENV VERSION 0.64.0
-RUN mkdir -p /usr/local/src 
+# RUN mkdir -p /usr/local/src 
 WORKDIR /usr/local/src
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 RUN curl -L -o ./hugo.tar.gz \
@@ -23,9 +22,16 @@ RUN curl -L -o ./hugo.tar.gz \
     && addgroup -Sg 1000 hugo \
     && adduser -SG hugo -u 1000 -h /src hugo
 
+USER hugo:hugo
+
 WORKDIR /src
 
 EXPOSE 1313
+
+#HEALTHCHECK CMD wget -q --method=HEAD localhost:1313
+HEALTHCHECK --interval=10s --timeout=10s --start-period=15s \
+  CMD hugo env || exit 1
+
 ENTRYPOINT ["hugo"]
 CMD ["serve", "-w", "--bind=0.0.0.0"]
 

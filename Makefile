@@ -6,16 +6,11 @@ build:
 	@echo "Hugo Builder container built!"
 	@docker images lp/hugo-builder
 
-.PHONY: build
-
 run:
 	@docker run -dit -p 1313:1313 -v $(PWD)/orgdocs:/src --name hugo lp/hugo-builder
-.PHONY: run
 
 hadolint:
 	@docker run --rm -i hadolint/hadolint < Dockerfile
-
-.PHONY: hadolint
 
 clean:
 	@echo stopping hugo container
@@ -25,12 +20,16 @@ clean:
 	@echo removing lp/hugo-builder image
 	@-docker rmi lp/hugo-builder
 
-.PHONY: clean
-
 all:
 	make clean
 	make hadolint
 	make build
 
-.PHONY: all
+
+check_health:
+	@echo "Checking the health of the Hugo Server..."
+	@docker inspect --format='{{json .State.Health}}' hugo
+
+.PHONY: all clean hadolint check_health run build
+
 
